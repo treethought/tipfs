@@ -2,8 +2,12 @@ package ui
 
 import (
 	"fmt"
+	"log"
 	"os"
+	"os/exec"
+	"runtime"
 
+	"code.rocketnine.space/tslocum/cbind"
 	api "github.com/ipfs/go-ipfs-api"
 
 	"code.rocketnine.space/tslocum/cview"
@@ -12,7 +16,8 @@ import (
 
 type RepoTree struct {
 	*cview.TreeView
-	app *App
+	app          *App
+	inputHandler *cbind.Configuration
 }
 
 func NewRepoTree(app *App) *RepoTree {
@@ -29,6 +34,9 @@ func NewRepoTree(app *App) *RepoTree {
 	rootNode := cview.NewTreeNode("/")
 	m.SetRoot(rootNode)
 	m.SetCurrentNode(rootNode)
+
+	m.inputHandler = cbind.NewConfiguration()
+	m.initBindings()
 
 	entries, err := app.client.ListFiles("/")
 	if err != nil {
@@ -54,4 +62,41 @@ func NewRepoTree(app *App) *RepoTree {
 
 	})
 	return m
+}
+func (r *RepoTree) handleOpen(ev *tcell.EventKey) *tcell.EventKey {
+	ref := r.GetCurrentNode().GetReference()
+	entry, ok := ref.(*api.MfsLsEntry)
+	if !ok {
+		return nil
+	}
+
+	url := fmt.Sprintf("ipfs://%s", entry.Hash)
+	openbrowser(url)
+	return nil
+
+}
+
+func (t *RepoTree) initBindings() {
+	t.inputHandler.SetRune(tcell.ModNone, 'o', t.handleOpen)
+	t.SetInputCapture(t.inputHandler.Capture)
+
+}
+
+func openbrowser(url string) {
+	var err error
+
+	switch runtime.GOOS {
+	case "linux":
+		err = exec.Command("xdg-open", url).Start()
+	case "windows":
+		err = exec.Command("rundll32", "url.dll,FileProtocolHandler", url).Start()
+	case "darwin":
+		err = exec.Command("open", url).Start()
+	default:
+		err = fmt.Errorf("unsupported platform")
+	}
+	if err != nil {
+		log.Fatal(err)
+	}
+
 }
