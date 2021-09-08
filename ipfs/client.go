@@ -21,6 +21,12 @@ func NewClient(url string) *Client {
 	return c
 }
 
+func (c *Client) GetDag(ref string) (out map[string]interface{}, err error) {
+	out = make(map[string]interface{})
+	err = c.sh.DagGet(ref, &out)
+	return out, err
+}
+
 func (c *Client) ListFiles(path string) (entries []*api.MfsLsEntry, err error) {
 	entries, err = c.sh.FilesLs(context.Background(), path, api.FilesLs.Stat(true))
 	if err != nil {

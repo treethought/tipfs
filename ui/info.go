@@ -9,13 +9,13 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
-type Info struct {
+type FileInfo struct {
 	*cview.TextView
 	app *App
 }
 
-func NewInfo(app *App) *Info {
-	m := &Info{
+func NewFileInfo(app *App) *FileInfo {
+	m := &FileInfo{
 		TextView: cview.NewTextView(),
 		app:      app,
 	}
@@ -27,7 +27,7 @@ func NewInfo(app *App) *Info {
 	return m
 }
 
-func (i *Info) SetItem(entry *api.MfsLsEntry) {
+func (i *FileInfo) SetItem(entry *api.MfsLsEntry) {
 	info := fmt.Sprintf("%+v", entry)
 
 	stat, err := i.app.client.StatEntry(entry)

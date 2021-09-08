@@ -22,7 +22,7 @@ func NewRepoTree(app *App) *RepoTree {
 	}
 	m.SetBorder(true)
 	m.SetPadding(1, 1, 1, 1)
-	m.SetTitle("menu")
+	m.SetTitle("repo")
 	m.SetBackgroundColor(tcell.ColorDefault)
 	m.SetSelectedTextColor(tcell.ColorTeal)
 
@@ -50,6 +50,7 @@ func NewRepoTree(app *App) *RepoTree {
 		}
 
 		m.app.info.SetItem(entry)
+		m.app.dag.SetItem(entry)
 
 	})
 	return m

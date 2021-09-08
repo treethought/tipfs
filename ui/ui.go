@@ -13,9 +13,9 @@ type App struct {
 	client       *ipfs.Client
 	ui           *cview.Application
 	root         *cview.Flex
-	menu         *RepoTree
-	info         *Info
-	buffer       *Buffer
+	repo         *RepoTree
+	info         *FileInfo
+	dag          *DagInfo
 	panels       *cview.Panels
 	focusManager *cview.FocusManager
 }
@@ -25,9 +25,9 @@ func New() *App {
 }
 
 func (app *App) initViews() {
-	app.menu = NewRepoTree(app)
-	app.info = NewInfo(app)
-	app.buffer = NewBuffer(app)
+	app.repo = NewRepoTree(app)
+	app.info = NewFileInfo(app)
+	app.dag = NewDagInfo(app)
 
 	panels := cview.NewPanels()
 	app.panels = panels
@@ -37,6 +37,7 @@ func (app *App) initViews() {
 	mid.SetDirection(cview.FlexRow)
 	mid.AddItem(app.panels, 0, 4, true)
 	mid.AddItem(app.info, 0, 4, false)
+	mid.AddItem(app.dag, 0, 4, false)
 
 	flex := cview.NewFlex()
 	flex.SetBackgroundTransparent(false)
@@ -44,7 +45,7 @@ func (app *App) initViews() {
 
 	left := cview.NewFlex()
 	left.SetDirection(cview.FlexRow)
-	left.AddItem(app.menu, 0, 7, false)
+	left.AddItem(app.repo, 0, 7, false)
 
 	flex.AddItem(left, 0, 2, false)
 	flex.AddItem(mid, 0, 4, false)
@@ -72,7 +73,7 @@ func (app *App) initBindings() {
 func (app *App) initInputHandler() {
 	app.focusManager = cview.NewFocusManager(app.ui.SetFocus)
 	app.focusManager.SetWrapAround(true)
-	app.focusManager.Add(app.menu, app.panels)
+	app.focusManager.Add(app.repo, app.panels)
 
 }
 
@@ -88,7 +89,7 @@ func (app *App) Start() {
 	app.initBindings()
 
 	app.ui.SetRoot(app.root, true)
-	app.ui.SetFocus(app.menu)
+	app.ui.SetFocus(app.repo)
 
 	err := app.ui.Run()
 	if err != nil {
