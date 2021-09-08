@@ -32,7 +32,7 @@ func (i *FileInfo) SetItem(entry *api.MfsLsEntry) {
 
 	stat, err := i.app.client.StatEntry(entry)
 	if err != nil {
-		panic(err)
+		return
 	}
 	info = fmt.Sprintf("%s\n%s", entry.Name, stat)
 

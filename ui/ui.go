@@ -35,7 +35,7 @@ func (app *App) initViews() {
 	mid := cview.NewFlex()
 	mid.SetBackgroundColor(tcell.ColorDefault)
 	mid.SetDirection(cview.FlexRow)
-	mid.AddItem(app.panels, 0, 4, true)
+	// mid.AddItem(app.panels, 0, 4, true)
 	mid.AddItem(app.info, 0, 4, false)
 	mid.AddItem(app.dag, 0, 4, false)
 

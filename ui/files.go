@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 
 	"code.rocketnine.space/tslocum/cbind"
@@ -18,6 +19,32 @@ type RepoTree struct {
 	*cview.TreeView
 	app          *App
 	inputHandler *cbind.Configuration
+}
+
+func (r *RepoTree) buildNodes(basePath string, entries ...*api.MfsLsEntry) []*cview.TreeNode {
+	nodes := []*cview.TreeNode{}
+	for _, i := range entries {
+		fmt.Println(i.Name)
+		node := cview.NewTreeNode(i.Name)
+		node.SetReference(i)
+
+		if i.Type == api.TDirectory {
+
+			path := filepath.Join(basePath, i.Name)
+			children, err := r.app.client.ListFiles(path)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+
+			childrenNodes := r.buildNodes(path, children...)
+			node.SetChildren(childrenNodes)
+			node.SetExpanded(false)
+		}
+
+		nodes = append(nodes, node)
+	}
+	return nodes
 }
 
 func NewRepoTree(app *App) *RepoTree {
@@ -44,23 +71,9 @@ func NewRepoTree(app *App) *RepoTree {
 		os.Exit(1)
 	}
 
-	for _, i := range entries {
-		node := cview.NewTreeNode(i.Name)
-		node.SetReference(i)
-		rootNode.AddChild(node)
-	}
+	nodes := m.buildNodes("/", entries...)
+	rootNode.SetChildren(nodes)
 
-	m.SetSelectedFunc(func(n *cview.TreeNode) {
-		ref := n.GetReference()
-		entry, ok := ref.(*api.MfsLsEntry)
-		if !ok {
-			return
-		}
-
-		m.app.info.SetItem(entry)
-		m.app.dag.SetItem(entry)
-
-	})
 	return m
 }
 func (r *RepoTree) handleOpen(ev *tcell.EventKey) *tcell.EventKey {
@@ -76,7 +89,25 @@ func (r *RepoTree) handleOpen(ev *tcell.EventKey) *tcell.EventKey {
 
 }
 
+func (r *RepoTree) handleSelect(ev *tcell.EventKey) *tcell.EventKey {
+	node := r.GetCurrentNode()
+	ref := node.GetReference()
+	entry, ok := ref.(*api.MfsLsEntry)
+	if !ok {
+		return nil
+	}
+
+	if len(node.GetChildren()) > 0 {
+		node.SetExpanded(true)
+	}
+
+	r.app.info.SetItem(entry)
+	r.app.dag.SetItem(entry)
+	return nil
+}
+
 func (t *RepoTree) initBindings() {
+	t.inputHandler.SetKey(tcell.ModNone, tcell.KeyEnter, t.handleSelect)
 	t.inputHandler.SetRune(tcell.ModNone, 'o', t.handleOpen)
 	t.SetInputCapture(t.inputHandler.Capture)
 
