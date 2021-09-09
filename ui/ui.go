@@ -76,7 +76,7 @@ func (app *App) initBindings() {
 func (app *App) initInputHandler() {
 	app.focusManager = cview.NewFocusManager(app.ui.SetFocus)
 	app.focusManager.SetWrapAround(true)
-	app.focusManager.Add(app.repo, app.info, app.dag)
+	app.focusManager.Add(app.repo, app.content, app.info, app.dag)
 
 }
 

@@ -4,11 +4,14 @@ import (
 	"bytes"
 	"image/color"
 	"io"
+	"log"
 	"net/http"
 
 	"code.rocketnine.space/tslocum/cview"
+	md "github.com/JohannesKaufmann/html-to-markdown"
 	"github.com/eliukblau/pixterm/pkg/ansimage"
 	"github.com/gdamore/tcell/v2"
+
 	api "github.com/ipfs/go-ipfs-api"
 )
 
@@ -50,6 +53,13 @@ func (c *Content) SetItem(path string, entry *api.MfsLsEntry) {
 		r := bytes.NewReader(data)
 		img := translateImage(r, w, h)
 		c.SetText(img)
+	case "text/html; charset=utf-8":
+		converter := md.NewConverter("", true, nil)
+		markdown, err := converter.ConvertBytes(data)
+		if err != nil {
+			log.Fatal(err)
+		}
+		c.SetText(string(markdown))
 	default:
 		c.SetText(contentType)
 	}

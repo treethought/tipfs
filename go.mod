@@ -5,6 +5,7 @@ go 1.17
 require (
 	code.rocketnine.space/tslocum/cbind v0.1.5
 	code.rocketnine.space/tslocum/cview v1.5.7
+	github.com/JohannesKaufmann/html-to-markdown v1.3.0
 	github.com/eliukblau/pixterm v1.3.1
 	github.com/gdamore/tcell/v2 v2.4.1-0.20210828201608-73703f7ed490
 	github.com/ipfs/go-ipfs-api v0.2.0
@@ -13,6 +14,8 @@ require (
 )
 
 require (
+	github.com/PuerkitoBio/goquery v1.5.1 // indirect
+	github.com/andybalholm/cascadia v1.1.0 // indirect
 	github.com/btcsuite/btcd v0.20.1-beta // indirect
 	github.com/crackcomm/go-gitignore v0.0.0-20170627025303-887ab5e44cc3 // indirect
 	github.com/disintegration/imaging v1.6.2 // indirect
@@ -46,6 +49,7 @@ require (
 	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9 // indirect
 	golang.org/x/image v0.0.0-20191206065243-da761ea9ff43 // indirect
+	golang.org/x/net v0.0.0-20210405180319-a5a99cb37ef4 // indirect
 	golang.org/x/sys v0.0.0-20210831042530-f4d43177bf5e // indirect
 	golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b // indirect
 	golang.org/x/text v0.3.7 // indirect
