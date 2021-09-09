@@ -21,23 +21,31 @@ type RepoTree struct {
 	inputHandler *cbind.Configuration
 }
 
+type TreeEntry struct {
+	entry *api.MfsLsEntry
+	path  string
+}
+
 func (r *RepoTree) buildNodes(basePath string, entries ...*api.MfsLsEntry) []*cview.TreeNode {
 	nodes := []*cview.TreeNode{}
 	for _, i := range entries {
 		fmt.Println(i.Name)
 		node := cview.NewTreeNode(i.Name)
-		node.SetReference(i)
+		ref := TreeEntry{
+			entry: i,
+			path:  filepath.Join(basePath, i.Name),
+		}
+		node.SetReference(ref)
 
 		if i.Type == api.TDirectory {
 
-			path := filepath.Join(basePath, i.Name)
-			children, err := r.app.client.ListFiles(path)
+			children, err := r.app.client.ListFiles(ref.path)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
 			}
 
-			childrenNodes := r.buildNodes(path, children...)
+			childrenNodes := r.buildNodes(ref.path, children...)
 			node.SetChildren(childrenNodes)
 			node.SetExpanded(false)
 		}
@@ -76,14 +84,15 @@ func NewRepoTree(app *App) *RepoTree {
 
 	return m
 }
+
 func (r *RepoTree) handleOpen(ev *tcell.EventKey) *tcell.EventKey {
 	ref := r.GetCurrentNode().GetReference()
-	entry, ok := ref.(*api.MfsLsEntry)
+	e, ok := ref.(TreeEntry)
 	if !ok {
 		return nil
 	}
 
-	url := fmt.Sprintf("ipfs://%s", entry.Hash)
+	url := fmt.Sprintf("ipfs://%s", e.entry.Hash)
 	openbrowser(url)
 	return nil
 
@@ -92,7 +101,7 @@ func (r *RepoTree) handleOpen(ev *tcell.EventKey) *tcell.EventKey {
 func (r *RepoTree) handleSelect(ev *tcell.EventKey) *tcell.EventKey {
 	node := r.GetCurrentNode()
 	ref := node.GetReference()
-	entry, ok := ref.(*api.MfsLsEntry)
+	e, ok := ref.(TreeEntry)
 	if !ok {
 		return nil
 	}
@@ -101,8 +110,8 @@ func (r *RepoTree) handleSelect(ev *tcell.EventKey) *tcell.EventKey {
 		node.SetExpanded(true)
 	}
 
-	r.app.info.SetItem(entry)
-	r.app.dag.SetItem(entry)
+	r.app.info.SetItem(e.path, e.entry)
+	r.app.dag.SetItem(e.entry)
 	return nil
 }
 

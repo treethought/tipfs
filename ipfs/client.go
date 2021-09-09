@@ -39,9 +39,9 @@ func (c *Client) ListFiles(path string) (entries []*api.MfsLsEntry, err error) {
 	return entries, nil
 }
 
-func (c *Client) StatEntry(entry *api.MfsLsEntry) (string, error) {
+func (c *Client) StatFile(path string, entry *api.MfsLsEntry) (string, error) {
 
-	f, err := c.sh.FilesStat(context.Background(), fmt.Sprintf("/%s", entry.Name))
+	f, err := c.sh.FilesStat(context.Background(), path)
 	if err != nil {
 		return "", err
 	}

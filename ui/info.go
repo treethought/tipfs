@@ -27,11 +27,12 @@ func NewFileInfo(app *App) *FileInfo {
 	return m
 }
 
-func (i *FileInfo) SetItem(entry *api.MfsLsEntry) {
+func (i *FileInfo) SetItem(path string, entry *api.MfsLsEntry) {
 	info := fmt.Sprintf("%+v", entry)
 
-	stat, err := i.app.client.StatEntry(entry)
+	stat, err := i.app.client.StatFile(path, entry)
 	if err != nil {
+		i.SetText(fmt.Sprintf("%s\n%v", path, err))
 		return
 	}
 	info = fmt.Sprintf("%s\n%s", entry.Name, stat)
