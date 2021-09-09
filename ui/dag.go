@@ -31,15 +31,19 @@ func NewDagInfo(app *App) *DagInfo {
 func (i *DagInfo) SetItem(entry *api.MfsLsEntry) {
 	i.entry = entry
 
-	dag, err := i.app.client.GetDag(entry.Hash)
-	if err != nil {
-		panic(err)
-	}
+	i.Clear()
 
-	data, err := yaml.Marshal(dag)
-	if err != nil {
-		panic(err)
-	}
+	go i.app.ui.QueueUpdateDraw(func() {
+		dag, err := i.app.client.GetDag(entry.Hash)
+		if err != nil {
+			panic(err)
+		}
 
-	i.SetText(string(data))
+		data, err := yaml.Marshal(dag)
+		if err != nil {
+			panic(err)
+		}
+
+		i.SetText(string(data))
+	})
 }

@@ -29,13 +29,17 @@ func NewFileInfo(app *App) *FileInfo {
 
 func (i *FileInfo) SetItem(path string, entry *api.MfsLsEntry) {
 	info := fmt.Sprintf("%+v", entry)
+	i.Clear()
 
-	stat, err := i.app.client.StatFile(path, entry)
-	if err != nil {
-		i.SetText(fmt.Sprintf("%s\n%v", path, err))
-		return
-	}
-	info = fmt.Sprintf("%s\n%s", entry.Name, stat)
+	go i.app.ui.QueueUpdateDraw(func() {
+		stat, err := i.app.client.StatFile(path, entry)
+		if err != nil {
+			i.SetText(fmt.Sprintf("%s\n%v", path, err))
+			return
+		}
+		info = fmt.Sprintf("%s\n%s", entry.Name, stat)
 
-	i.SetText(info)
+		i.SetText(info)
+
+	})
 }
