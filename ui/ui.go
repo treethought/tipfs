@@ -16,6 +16,7 @@ type App struct {
 	repo         *RepoTree
 	info         *FileInfo
 	dag          *DagInfo
+	content      *Content
 	panels       *cview.Panels
 	focusManager *cview.FocusManager
 }
@@ -28,6 +29,7 @@ func (app *App) initViews() {
 	app.repo = NewRepoTree(app)
 	app.info = NewFileInfo(app)
 	app.dag = NewDagInfo(app)
+	app.content = NewContentView(app)
 
 	panels := cview.NewPanels()
 	app.panels = panels
@@ -36,6 +38,7 @@ func (app *App) initViews() {
 	mid.SetBackgroundColor(tcell.ColorDefault)
 	mid.SetDirection(cview.FlexRow)
 	// mid.AddItem(app.panels, 0, 4, true)
+	mid.AddItem(app.content, 0, 4, false)
 	mid.AddItem(app.info, 0, 4, false)
 	mid.AddItem(app.dag, 0, 4, false)
 

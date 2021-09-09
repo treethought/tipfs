@@ -3,6 +3,7 @@ package ipfs
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 
 	api "github.com/ipfs/go-ipfs-api"
 	"gopkg.in/yaml.v2"
@@ -19,6 +20,17 @@ func NewClient(url string) *Client {
 		sh:      api.NewShell(url),
 	}
 	return c
+}
+
+func (c *Client) ReadFile(path string, entry *api.MfsLsEntry) ([]byte, error) {
+	if entry.Type == api.TDirectory {
+		return []byte("directory"), nil
+	}
+	r, err := c.sh.FilesRead(context.Background(), path)
+	if err != nil {
+		return nil, err
+	}
+	return ioutil.ReadAll(r)
 }
 
 func (c *Client) GetDag(ref string) (out map[string]interface{}, err error) {

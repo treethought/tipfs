@@ -64,7 +64,6 @@ func NewRepoTree(app *App) *RepoTree {
 	m.SetPadding(1, 1, 1, 1)
 	m.SetTitle("repo")
 	m.SetBackgroundColor(tcell.ColorDefault)
-	m.SetSelectedTextColor(tcell.ColorTeal)
 
 	rootNode := cview.NewTreeNode("/")
 	m.SetRoot(rootNode)
@@ -112,6 +111,7 @@ func (r *RepoTree) handleSelect(ev *tcell.EventKey) *tcell.EventKey {
 
 	r.app.info.SetItem(e.path, e.entry)
 	r.app.dag.SetItem(e.entry)
+	r.app.content.SetItem(e.path, e.entry)
 	return nil
 }
 
