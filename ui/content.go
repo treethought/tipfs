@@ -2,6 +2,7 @@ package ui
 
 import (
 	"bytes"
+	"fmt"
 	"image/color"
 	"io"
 	"log"
@@ -27,6 +28,7 @@ func NewContentView(app *App) *Content {
 		TextView: cview.NewTextView(),
 		app:      app,
 	}
+
 	m.SetBorder(true)
 	m.SetPadding(1, 1, 1, 1)
 	m.SetTitle("content")
@@ -36,6 +38,8 @@ func NewContentView(app *App) *Content {
 }
 
 func (c *Content) SetItem(path string, entry *api.MfsLsEntry) {
+	c.Clear()
+	// go c.app.ui.QueueUpdateDraw(func() {
 
 	data, err := c.app.client.ReadFile(path, entry)
 	if err != nil {
@@ -60,9 +64,19 @@ func (c *Content) SetItem(path string, entry *api.MfsLsEntry) {
 			log.Fatal(err)
 		}
 		c.SetText(string(markdown))
+
+	case "text/plain; charset=utf-8":
+		c.Write(data)
+
+	case "audio/wave", "audio/mp3", "audio/ogg":
+		c.SetText(fmt.Sprintf("contentType: %s\nPress 'o' to play in browser", contentType))
+
 	default:
-		c.SetText(contentType)
+		c.SetText(fmt.Sprintf("ContentType: %s\nPress 'o' to open in browser", contentType))
 	}
+
+	c.ScrollToBeginning()
+	// })
 }
 
 func translateImage(reader io.Reader, x, y int) string {
