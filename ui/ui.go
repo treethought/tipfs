@@ -83,7 +83,7 @@ func (app *App) initViews() {
 	// mid.AddItem(app.dataPanels, 0, 4, true)
 	mid.AddItem(content, 0, 4, false)
 	// mid.AddItem(app.info, 0, 2, false)
-	// mid.AddItem(dag, 0, 4, false)
+	mid.AddItem(dag, 0, 2, false)
 
 	flex := cview.NewFlex()
 	flex.SetBackgroundTransparent(false)
@@ -92,14 +92,14 @@ func (app *App) initViews() {
 	left := cview.NewFlex()
 	left.SetDirection(cview.FlexRow)
 	// left.AddItem(app.repo, 0, 7, false)
-	left.AddItem(app.dataPanels, 0, 7, false)
+	left.AddItem(app.dataPanels, 0, 4, false)
 	left.AddItem(info, 0, 2, false)
 
 	flex.AddItem(left, 0, 2, false)
 	flex.AddItem(mid, 0, 4, false)
 	app.root = flex
 
-	app.initInputHandler(repo, content, info)
+	app.initInputHandler(repo, content, info, dag)
 
 }
 
@@ -142,6 +142,8 @@ func (app *App) Start() {
 
 	app.ui.SetRoot(app.root, true)
 	app.ui.SetFocus(app.dataPanels)
+
+	app.ui.EnableMouse(true)
 
 	err := app.ui.Run()
 	if err != nil {

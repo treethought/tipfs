@@ -9,6 +9,7 @@ require (
 	github.com/eliukblau/pixterm v1.3.1
 	github.com/gdamore/tcell/v2 v2.4.1-0.20210828201608-73703f7ed490
 	github.com/ipfs/go-ipfs-api v0.2.0
+	github.com/ipfs/go-ipld-format v0.2.0
 	github.com/spf13/cobra v1.2.1
 	gopkg.in/yaml.v2 v2.4.0
 )
@@ -22,8 +23,10 @@ require (
 	github.com/gdamore/encoding v1.0.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
+	github.com/ipfs/go-block-format v0.0.2 // indirect
 	github.com/ipfs/go-cid v0.0.7 // indirect
 	github.com/ipfs/go-ipfs-files v0.0.8 // indirect
+	github.com/ipfs/go-ipfs-util v0.0.2 // indirect
 	github.com/libp2p/go-buffer-pool v0.0.2 // indirect
 	github.com/libp2p/go-flow-metrics v0.0.3 // indirect
 	github.com/libp2p/go-libp2p-core v0.6.1 // indirect
