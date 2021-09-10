@@ -51,9 +51,9 @@ func (c *Content) SetItem(path string, entry *api.MfsLsEntry) {
 	}
 
 	switch contentType {
-	case "image/png":
+	case "image/png", "image/jpeg":
 		c.SetDynamicColors(true)
-		_, _, w, h := c.GetInnerRect()
+		_, _, w, h := c.GetRect()
 		r := bytes.NewReader(data)
 		img := translateImage(r, w, h)
 		c.SetText(img)
@@ -76,7 +76,6 @@ func (c *Content) SetItem(path string, entry *api.MfsLsEntry) {
 	}
 
 	c.ScrollToBeginning()
-	// })
 }
 
 func translateImage(reader io.Reader, x, y int) string {
@@ -90,8 +89,7 @@ func translateImage(reader io.Reader, x, y int) string {
 }
 
 func buildImage(reader io.Reader, x, y int) (*ansimage.ANSImage, error) {
-	pix, err := ansimage.NewScaledFromReader(reader, y, x, color.Transparent, ansimage.ScaleModeFill, ansimage.NoDithering)
-	// pix, err := ansimage.NewScaledFromURL(url, y, x, color.Transparent, ansimage.ScaleModeResize, ansimage.NoDithering)
+	pix, err := ansimage.NewScaledFromReader(reader, y, x, color.Transparent, ansimage.ScaleModeFit, ansimage.NoDithering)
 	if err != nil {
 		return nil, err
 	}
