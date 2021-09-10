@@ -37,7 +37,9 @@ func NewContentView(app *App) *Content {
 	return m
 }
 
-func (c *Content) SetItem(path string, entry *api.MfsLsEntry) {
+func (c *Content) Update() {
+	current := c.app.state.currentItem
+	path, entry := current.path, current.entry
 	c.Clear()
 	// go c.app.ui.QueueUpdateDraw(func() {
 
@@ -76,6 +78,7 @@ func (c *Content) SetItem(path string, entry *api.MfsLsEntry) {
 	}
 
 	c.ScrollToBeginning()
+
 }
 
 func translateImage(reader io.Reader, x, y int) string {

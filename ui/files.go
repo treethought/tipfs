@@ -60,7 +60,7 @@ func NewRepoTree(app *App) *RepoTree {
 		TreeView: cview.NewTreeView(),
 		app:      app,
 	}
-	m.SetBorder(true)
+	m.SetBorder(false)
 	m.SetPadding(1, 1, 1, 1)
 	m.SetTitle("repo")
 	m.SetBackgroundColor(tcell.ColorDefault)
@@ -83,6 +83,8 @@ func NewRepoTree(app *App) *RepoTree {
 
 	return m
 }
+
+func (r *RepoTree) Update() {}
 
 func (r *RepoTree) handleOpen(ev *tcell.EventKey) *tcell.EventKey {
 	ref := r.GetCurrentNode().GetReference()
@@ -109,9 +111,8 @@ func (r *RepoTree) handleSelect(ev *tcell.EventKey) *tcell.EventKey {
 		node.SetExpanded(true)
 	}
 
-	r.app.info.SetItem(e.path, e.entry)
-	r.app.dag.SetItem(e.entry)
-	r.app.content.SetItem(e.path, e.entry)
+	r.app.state.SetItem(e)
+
 	return nil
 }
 

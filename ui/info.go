@@ -3,7 +3,6 @@ package ui
 import (
 	"fmt"
 
-	api "github.com/ipfs/go-ipfs-api"
 
 	"code.rocketnine.space/tslocum/cview"
 	"github.com/gdamore/tcell/v2"
@@ -27,17 +26,18 @@ func NewFileInfo(app *App) *FileInfo {
 	return m
 }
 
-func (i *FileInfo) SetItem(path string, entry *api.MfsLsEntry) {
-	info := fmt.Sprintf("%+v", entry)
+func (i *FileInfo) Update() {
+	current := i.app.state.currentItem
+	info := fmt.Sprintf("%+v", current.entry)
 	i.Clear()
 
 	go i.app.ui.QueueUpdateDraw(func() {
-		stat, err := i.app.client.StatFile(path, entry)
+		stat, err := i.app.client.StatFile(current.path, current.entry)
 		if err != nil {
-			i.SetText(fmt.Sprintf("%s\n%v", path, err))
+			i.SetText(fmt.Sprintf("%s\n%v", current.path, err))
 			return
 		}
-		info = fmt.Sprintf("%s\n%s", entry.Name, stat)
+		info = fmt.Sprintf("%s\n%s", current.entry.Name, stat)
 
 		i.SetText(info)
 

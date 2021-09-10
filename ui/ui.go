@@ -6,41 +6,84 @@ import (
 	"code.rocketnine.space/tslocum/cbind"
 	"code.rocketnine.space/tslocum/cview"
 	"github.com/gdamore/tcell/v2"
+	api "github.com/ipfs/go-ipfs-api"
 	"github.com/treethought/tipfs/ipfs"
 )
 
 type App struct {
+	ipfs         *api.Shell
 	client       *ipfs.Client
 	ui           *cview.Application
 	root         *cview.Flex
-	repo         *RepoTree
-	info         *FileInfo
-	dag          *DagInfo
-	content      *Content
-	panels       *cview.Panels
+	dataPanels   *cview.TabbedPanels
 	focusManager *cview.FocusManager
+	state        *State
+	widgets      []Widget
+}
+
+type Widget interface {
+	Update()
+}
+
+type State struct {
+	app         *App
+	currentItem TreeEntry
+
+func NewState(app *App) *State {
+	return &State{
+		app:         app,
+		currentItem: TreeEntry{path: "/", entry: nil},
+	}
+}
+
+func (s *State) SetItem(e TreeEntry) {
+	s.currentItem = e
+	for _, w := range s.app.widgets {
+		w.Update()
+	}
 }
 
 func New() *App {
-	return &App{}
+	app := &App{
+		ipfs:    api.NewLocalShell(),
+		widgets: make([]Widget, 0),
+	}
+
+	app.state = NewState(app)
+	return app
 }
 
 func (app *App) initViews() {
-	app.repo = NewRepoTree(app)
-	app.info = NewFileInfo(app)
-	app.dag = NewDagInfo(app)
-	app.content = NewContentView(app)
+	repo := NewRepoTree(app)
+	info := NewFileInfo(app)
+	dag := NewDagInfo(app)
+	content := NewContentView(app)
 
-	panels := cview.NewPanels()
-	app.panels = panels
+	peers := NewPeerList(app)
+
+	app.widgets = append(app.widgets, repo, info, dag, content, peers)
+
+	dataPanels := cview.NewTabbedPanels()
+	dataPanels.AddTab("files", "files", repo)
+	dataPanels.AddTab("peers", "peers", peers)
+
+	dataPanels.SetBackgroundColor(tcell.ColorDefault)
+	dataPanels.SetTabBackgroundColor(tcell.ColorDefault)
+	dataPanels.SetTabSwitcherDivider("", " | ", "")
+	dataPanels.SetTabSwitcherAfterContent(true)
+	// dataPanels.SetDirection(cview.FlexColumn)
+	dataPanels.SetBorder(true)
+
+	app.dataPanels = dataPanels
+	// app.dataPanels.AddItem(app.repo, 0, 4, true)
 
 	mid := cview.NewFlex()
 	mid.SetBackgroundColor(tcell.ColorDefault)
 	mid.SetDirection(cview.FlexRow)
-	// mid.AddItem(app.panels, 0, 4, true)
-	mid.AddItem(app.content, 0, 4, false)
-	mid.AddItem(app.info, 0, 4, false)
-	mid.AddItem(app.dag, 0, 4, false)
+	// mid.AddItem(app.dataPanels, 0, 4, true)
+	mid.AddItem(content, 0, 4, false)
+	// mid.AddItem(app.info, 0, 2, false)
+	// mid.AddItem(dag, 0, 4, false)
 
 	flex := cview.NewFlex()
 	flex.SetBackgroundTransparent(false)
@@ -48,19 +91,19 @@ func (app *App) initViews() {
 
 	left := cview.NewFlex()
 	left.SetDirection(cview.FlexRow)
-	left.AddItem(app.repo, 0, 7, false)
+	// left.AddItem(app.repo, 0, 7, false)
+	left.AddItem(app.dataPanels, 0, 7, false)
+	left.AddItem(info, 0, 2, false)
 
 	flex.AddItem(left, 0, 2, false)
 	flex.AddItem(mid, 0, 4, false)
 	app.root = flex
 
+	app.initInputHandler(repo, content, info)
+
 }
 
 func (app *App) handleToggle(ev *tcell.EventKey) *tcell.EventKey {
-	current, _ := app.panels.GetFrontPanel()
-	if current == "compose" {
-		return ev
-	}
 	app.focusManager.FocusNext()
 	return nil
 
@@ -69,30 +112,36 @@ func (app *App) handleToggle(ev *tcell.EventKey) *tcell.EventKey {
 func (app *App) initBindings() {
 	c := cbind.NewConfiguration()
 	c.SetKey(tcell.ModNone, tcell.KeyTAB, app.handleToggle)
+	c.SetKey(tcell.ModNone, tcell.KeyF1, app.handleToggle)
+	c.SetRune(tcell.ModNone, '1', func(ev *tcell.EventKey) *tcell.EventKey {
+		app.dataPanels.SetCurrentTab("files")
+		return nil
+	})
+	c.SetRune(tcell.ModNone, '2', func(ev *tcell.EventKey) *tcell.EventKey {
+		app.dataPanels.SetCurrentTab("peers")
+		return nil
+	})
 	app.ui.SetInputCapture(c.Capture)
-
 }
 
-func (app *App) initInputHandler() {
+func (app *App) initInputHandler(widgets ...cview.Primitive) {
+	widgets = append(widgets, app.dataPanels)
 	app.focusManager = cview.NewFocusManager(app.ui.SetFocus)
 	app.focusManager.SetWrapAround(true)
-	app.focusManager.Add(app.repo, app.content, app.info, app.dag)
-
+	app.focusManager.Add(widgets...)
 }
 
 func (app *App) Start() {
-
 	app.client = ipfs.NewClient("localhost:5001")
 
 	// Initialize application
 	app.ui = cview.NewApplication()
 
 	app.initViews()
-	app.initInputHandler()
 	app.initBindings()
 
 	app.ui.SetRoot(app.root, true)
-	app.ui.SetFocus(app.repo)
+	app.ui.SetFocus(app.dataPanels)
 
 	err := app.ui.Run()
 	if err != nil {

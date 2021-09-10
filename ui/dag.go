@@ -2,7 +2,6 @@ package ui
 
 import (
 	"github.com/gdamore/tcell/v2"
-	api "github.com/ipfs/go-ipfs-api"
 	"gopkg.in/yaml.v2"
 
 	"code.rocketnine.space/tslocum/cview"
@@ -10,9 +9,7 @@ import (
 
 type DagInfo struct {
 	*cview.TextView
-
-	app   *App
-	entry *api.MfsLsEntry
+	app *App
 }
 
 func NewDagInfo(app *App) *DagInfo {
@@ -28,12 +25,12 @@ func NewDagInfo(app *App) *DagInfo {
 	return m
 }
 
-func (i *DagInfo) SetItem(entry *api.MfsLsEntry) {
-	i.entry = entry
-
-	i.Clear()
+func (i *DagInfo) Update() {
+	entry := i.app.state.currentItem.entry
+	i.SetText("loading...")
 
 	go i.app.ui.QueueUpdateDraw(func() {
+
 		dag, err := i.app.client.GetDag(entry.Hash)
 		if err != nil {
 			panic(err)
@@ -43,7 +40,6 @@ func (i *DagInfo) SetItem(entry *api.MfsLsEntry) {
 		if err != nil {
 			panic(err)
 		}
-
 		i.SetText(string(data))
 	})
 }

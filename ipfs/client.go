@@ -17,7 +17,7 @@ type Client struct {
 func NewClient(url string) *Client {
 	c := &Client{
 		nodeURL: url,
-		sh:      api.NewShell(url),
+		sh:      api.NewLocalShell(),
 	}
 	return c
 }
@@ -76,4 +76,8 @@ func (c *Client) StatFile(path string, entry *api.MfsLsEntry) (string, error) {
 
 	return out, nil
 
+}
+
+func (c *Client) GetPeers() (*api.SwarmConnInfos, error) {
+	return c.sh.SwarmPeers(context.TODO())
 }
