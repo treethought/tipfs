@@ -65,6 +65,7 @@ func NewRepoTree(app *App) *RepoTree {
 	m.SetPadding(1, 1, 1, 1)
 	m.SetTitle("repo")
 	m.SetBackgroundColor(tcell.ColorDefault)
+	m.SetScrollBarVisibility(cview.ScrollBarNever)
 
 	rootNode := cview.NewTreeNode("/")
 	m.SetRoot(rootNode)
