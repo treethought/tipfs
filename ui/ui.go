@@ -86,7 +86,7 @@ func (app *App) initFilesLayout() *cview.Flex {
 
 }
 func (app *App) initPeersLayout() *cview.Flex {
-	peers := NewPeerList(app)
+	peers := NewPeerTable(app)
 	app.widgets = append(app.widgets, peers)
 
 	flex := cview.NewFlex()
@@ -96,9 +96,9 @@ func (app *App) initPeersLayout() *cview.Flex {
 	side := cview.NewFlex()
 	side.SetBackgroundTransparent(false)
 	side.SetBackgroundColor(tcell.ColorDefault)
-	side.AddItem(peers, 0, 2, true)
+	side.AddItem(peers, 0, 1, true)
 
-	flex.AddItem(side, 0, 2, true)
+	flex.AddItem(side, 0, 1, true)
 
 	return flex
 }
