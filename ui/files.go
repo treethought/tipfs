@@ -61,7 +61,7 @@ func NewRepoTree(app *App) *RepoTree {
 		TreeView: cview.NewTreeView(),
 		app:      app,
 	}
-	m.SetBorder(false)
+	m.SetBorder(true)
 	m.SetPadding(1, 1, 1, 1)
 	m.SetTitle("repo")
 	m.SetBackgroundColor(tcell.ColorDefault)
