@@ -30,7 +30,6 @@ type TreeEntry struct {
 func (r *RepoTree) buildNodes(basePath string, entries ...*api.MfsLsEntry) []*cview.TreeNode {
 	nodes := []*cview.TreeNode{}
 	for _, i := range entries {
-		fmt.Println(i.Name)
 		node := cview.NewTreeNode(i.Name)
 		ref := TreeEntry{
 			entry: i,

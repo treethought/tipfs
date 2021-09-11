@@ -29,6 +29,9 @@ func NewClient(url string) *Client {
 	return c
 }
 
+// func (c *Client) Get(path string, entry *api.MfsLsEntry) ([]byte, error) {
+// }
+
 func (c *Client) ReadFile(path string, entry *api.MfsLsEntry) ([]byte, error) {
 
 	if entry.Type == api.TDirectory {
@@ -56,9 +59,6 @@ func (c *Client) ListFiles(path string) (entries []*api.MfsLsEntry, err error) {
 	if err != nil {
 		fmt.Println(err)
 		return entries, err
-	}
-	for _, e := range entries {
-		fmt.Println(e.Name, e.Hash, e.Size, e.Type)
 	}
 	return entries, nil
 }
@@ -92,4 +92,8 @@ func (c *Client) StatFile(path string, entry *api.MfsLsEntry) (string, error) {
 
 func (c *Client) GetPeers() (*api.SwarmConnInfos, error) {
 	return c.sh.SwarmPeers(context.TODO())
+}
+
+func (c *Client) GetPeer(p string) (*api.PeerInfo, error) {
+	return c.sh.FindPeer(p)
 }
