@@ -9,11 +9,6 @@ import (
 	ipld "github.com/ipfs/go-ipld-format"
 )
 
-type DagData struct {
-	Data  string
-	Links []ipld.Link
-}
-
 type DagInfo struct {
 	*cview.TreeView
 	app          *App
@@ -100,9 +95,7 @@ func (i *DagInfo) Update() {
 
 	go i.app.ui.QueueUpdateDraw(func() {
 
-		dag := &DagData{}
-
-		err := i.app.ipfs.DagGet(i.currentHash, &dag)
+		dag, err := i.app.ipfs.GetDag(i.currentHash)
 		if err != nil {
 			panic(err)
 		}

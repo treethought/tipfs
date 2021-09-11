@@ -40,7 +40,7 @@ func (r *RepoTree) buildNodes(basePath string, entries ...*api.MfsLsEntry) []*cv
 
 		if i.Type == api.TDirectory {
 
-			children, err := r.app.client.ListFiles(ref.path)
+			children, err := r.app.ipfs.ListFiles(ref.path)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
@@ -73,7 +73,7 @@ func NewRepoTree(app *App) *RepoTree {
 	m.inputHandler = cbind.NewConfiguration()
 	m.initBindings()
 
-	entries, err := app.client.ListFiles("/")
+	entries, err := app.ipfs.ListFiles("/")
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)

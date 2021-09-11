@@ -12,15 +12,12 @@ import (
 	md "github.com/JohannesKaufmann/html-to-markdown"
 	"github.com/eliukblau/pixterm/pkg/ansimage"
 	"github.com/gdamore/tcell/v2"
-
-	api "github.com/ipfs/go-ipfs-api"
 )
 
 type Content struct {
 	*cview.TextView
 
-	app   *App
-	entry *api.MfsLsEntry
+	app *App
 }
 
 func NewContentView(app *App) *Content {
@@ -41,9 +38,8 @@ func (c *Content) Update() {
 	current := c.app.state.currentFile
 	path, entry := current.path, current.entry
 	c.Clear()
-	// go c.app.ui.QueueUpdateDraw(func() {
 
-	data, err := c.app.client.ReadFile(path, entry)
+	data, err := c.app.ipfs.ReadFile(path, entry)
 	if err != nil {
 		panic(err)
 	}
@@ -52,8 +48,12 @@ func (c *Content) Update() {
 		c.SetText(err.Error())
 	}
 
+	c.SetTextAlign(cview.AlignLeft)
+
 	switch contentType {
 	case "image/png", "image/jpeg":
+
+		c.SetTextAlign(cview.AlignCenter)
 		c.SetDynamicColors(true)
 		_, _, w, h := c.GetRect()
 		r := bytes.NewReader(data)

@@ -6,13 +6,11 @@ import (
 	"code.rocketnine.space/tslocum/cbind"
 	"code.rocketnine.space/tslocum/cview"
 	"github.com/gdamore/tcell/v2"
-	api "github.com/ipfs/go-ipfs-api"
 	"github.com/treethought/tipfs/ipfs"
 )
 
 type App struct {
-	ipfs         *api.Shell
-	client       *ipfs.Client
+	ipfs         *ipfs.Client
 	ui           *cview.Application
 	root         *cview.Flex
 	dataPanels   *cview.TabbedPanels
@@ -46,7 +44,7 @@ func (s *State) SetItem(e TreeEntry) {
 
 func New() *App {
 	app := &App{
-		ipfs:    api.NewLocalShell(),
+		ipfs:    ipfs.NewClient(""),
 		widgets: make([]Widget, 0),
 	}
 
@@ -133,7 +131,6 @@ func (app *App) initInputHandler(widgets ...cview.Primitive) {
 }
 
 func (app *App) Start() {
-	app.client = ipfs.NewClient("localhost:5001")
 
 	// Initialize application
 	app.ui = cview.NewApplication()

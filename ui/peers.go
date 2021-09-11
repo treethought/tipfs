@@ -30,7 +30,7 @@ func NewPeerList(app *App) *PeerList {
 	m.inputHandler = cbind.NewConfiguration()
 	m.initBindings()
 
-	peers, err := app.client.GetPeers()
+	peers, err := app.ipfs.GetPeers()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
