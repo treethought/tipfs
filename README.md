@@ -2,7 +2,7 @@
 
 tipfs is an ugly little ipfs TUI client.
 
-![demo](./demo.svg)
+[![asciicast](https://asciinema.org/a/435146.svg)](https://asciinema.org/a/435146)
 
 ## Install
 
