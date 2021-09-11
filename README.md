@@ -14,10 +14,11 @@ go get github.com/treethought/tipfs
 | key   | action                                 |
 |-------|----------------------------------------|
 | TAB   | Switch focus between panels            |
+| o     | Open in browser                        |
+| y     | Copy selected items CID                |
 | j     | Move selection up                      |
 | k     | Move selection down                    |
 | Enter | Select file to inspect                 |
-| o     | Open in browser                        |
 | g     | Go to top of panel                     |
 | G     | Go to bottom of panel                  |
 
