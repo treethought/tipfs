@@ -70,7 +70,8 @@ type DagData struct {
 }
 
 func (i *DagInfo) Update() {
-	fileNode := i.app.state.currentItem
+	i.GetRoot().ClearChildren()
+	fileNode := i.app.state.currentFile
 
 	// new file was selected, show dag for that
 	if i.currentEntry.path != fileNode.path {
@@ -78,7 +79,13 @@ func (i *DagInfo) Update() {
 		i.currentHash = fileNode.entry.Hash
 	}
 
+	current := i.GetCurrentNode()
+	if current == nil {
+		current = cview.NewTreeNode(fileNode.entry.Hash)
+	}
+
 	i.GetRoot().ClearChildren()
+	i.SetRoot(i.GetCurrentNode())
 
 	go i.app.ui.QueueUpdateDraw(func() {
 
@@ -97,6 +104,10 @@ func (i *DagInfo) Update() {
 		for _, l := range dag.Links {
 			node := cview.NewTreeNode(l.Cid.String())
 			node.SetReference(l)
+			size := cview.NewTreeNode(byteCount(l.Size))
+			name := cview.NewTreeNode(l.Name)
+			node.AddChild(name)
+			node.AddChild(size)
 			i.GetRoot().AddChild(node)
 		}
 
