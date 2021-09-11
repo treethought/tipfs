@@ -9,6 +9,7 @@ import (
 	"runtime"
 
 	"code.rocketnine.space/tslocum/cbind"
+	"github.com/atotto/clipboard"
 	api "github.com/ipfs/go-ipfs-api"
 
 	"code.rocketnine.space/tslocum/cview"
@@ -119,6 +120,17 @@ func (r *RepoTree) handleSelect(ev *tcell.EventKey) *tcell.EventKey {
 func (t *RepoTree) initBindings() {
 	t.inputHandler.SetKey(tcell.ModNone, tcell.KeyEnter, t.handleSelect)
 	t.inputHandler.SetRune(tcell.ModNone, 'o', t.handleOpen)
+	t.inputHandler.SetRune(tcell.ModNone, 'y', func(ev *tcell.EventKey) *tcell.EventKey {
+		node := t.GetCurrentNode()
+		ref := node.GetReference()
+		e, ok := ref.(TreeEntry)
+		if !ok {
+			return nil
+		}
+		clipboard.WriteAll(e.entry.Hash)
+
+		return nil
+	})
 	t.SetInputCapture(t.inputHandler.Capture)
 
 }

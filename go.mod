@@ -6,6 +6,7 @@ require (
 	code.rocketnine.space/tslocum/cbind v0.1.5
 	code.rocketnine.space/tslocum/cview v1.5.7
 	github.com/JohannesKaufmann/html-to-markdown v1.3.0
+	github.com/atotto/clipboard v0.1.4
 	github.com/eliukblau/pixterm v1.3.1
 	github.com/gdamore/tcell/v2 v2.4.1-0.20210828201608-73703f7ed490
 	github.com/ipfs/go-ipfs-api v0.2.0

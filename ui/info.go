@@ -3,7 +3,6 @@ package ui
 import (
 	"fmt"
 
-
 	"code.rocketnine.space/tslocum/cview"
 	"github.com/gdamore/tcell/v2"
 )
@@ -27,7 +26,8 @@ func NewFileInfo(app *App) *FileInfo {
 }
 
 func (i *FileInfo) Update() {
-	current := i.app.state.currentItem
+	current := i.app.state.currentFile
+
 	info := fmt.Sprintf("%+v", current.entry)
 	i.Clear()
 

@@ -27,17 +27,18 @@ type Widget interface {
 
 type State struct {
 	app         *App
-	currentItem TreeEntry
+	currentFile TreeEntry
+}
 
 func NewState(app *App) *State {
 	return &State{
 		app:         app,
-		currentItem: TreeEntry{path: "/", entry: nil},
+		currentFile: TreeEntry{path: "/", entry: nil},
 	}
 }
 
 func (s *State) SetItem(e TreeEntry) {
-	s.currentItem = e
+	s.currentFile = e
 	for _, w := range s.app.widgets {
 		w.Update()
 	}
@@ -99,7 +100,7 @@ func (app *App) initViews() {
 	flex.AddItem(mid, 0, 4, false)
 	app.root = flex
 
-	app.initInputHandler(repo, content, info, dag)
+	app.initInputHandler(repo, content, dag, info)
 
 }
 

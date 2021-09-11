@@ -1,12 +1,18 @@
 package ui
 
 import (
+	"github.com/atotto/clipboard"
 	"github.com/gdamore/tcell/v2"
 
 	"code.rocketnine.space/tslocum/cbind"
 	"code.rocketnine.space/tslocum/cview"
 	ipld "github.com/ipfs/go-ipld-format"
 )
+
+type DagData struct {
+	Data  string
+	Links []ipld.Link
+}
 
 type DagInfo struct {
 	*cview.TreeView
@@ -60,13 +66,18 @@ func (i *DagInfo) handleSelect(ev *tcell.EventKey) *tcell.EventKey {
 
 func (d *DagInfo) initBindings() {
 	d.inputHandler.SetKey(tcell.ModNone, tcell.KeyEnter, d.handleSelect)
+	d.inputHandler.SetRune(tcell.ModNone, 'y', func(ev *tcell.EventKey) *tcell.EventKey {
+		node := d.GetCurrentNode()
+		ref := node.GetReference()
+		e, ok := ref.(ipld.Link)
+		if !ok {
+			return nil
+		}
+		clipboard.WriteAll(e.Cid.String())
+
+		return nil
+	})
 	d.SetInputCapture(d.inputHandler.Capture)
-
-}
-
-type DagData struct {
-	Data  string
-	Links []ipld.Link
 }
 
 func (i *DagInfo) Update() {
@@ -111,11 +122,5 @@ func (i *DagInfo) Update() {
 			i.GetRoot().AddChild(node)
 		}
 
-		// i.SetText(strings.Join(lines, "\n"))
-		// data, err := yaml.Marshal(dag)
-		// if err != nil {
-		// 	panic(err)
-		// }
-		// i.SetText(string(data))
 	})
 }

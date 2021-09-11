@@ -38,7 +38,7 @@ func NewContentView(app *App) *Content {
 }
 
 func (c *Content) Update() {
-	current := c.app.state.currentItem
+	current := c.app.state.currentFile
 	path, entry := current.path, current.entry
 	c.Clear()
 	// go c.app.ui.QueueUpdateDraw(func() {
