@@ -6,16 +6,13 @@ import (
 	"code.rocketnine.space/tslocum/cbind"
 	"code.rocketnine.space/tslocum/cview"
 	"github.com/gdamore/tcell/v2"
-	api "github.com/ipfs/go-ipfs-api"
 	"github.com/treethought/tipfs/ipfs"
 )
 
 type App struct {
-	ipfs         *api.Shell
-	client       *ipfs.Client
+	ipfs         *ipfs.Client
 	ui           *cview.Application
-	root         *cview.Flex
-	dataPanels   *cview.TabbedPanels
+	root         *cview.TabbedPanels
 	focusManager *cview.FocusManager
 	state        *State
 	widgets      []Widget
@@ -46,7 +43,7 @@ func (s *State) SetItem(e TreeEntry) {
 
 func New() *App {
 	app := &App{
-		ipfs:    api.NewLocalShell(),
+		ipfs:    ipfs.NewClient(""),
 		widgets: make([]Widget, 0),
 	}
 
@@ -54,53 +51,77 @@ func New() *App {
 	return app
 }
 
-func (app *App) initViews() {
+func (app *App) initFilesLayout() *cview.Flex {
 	repo := NewRepoTree(app)
 	info := NewFileInfo(app)
 	dag := NewDagInfo(app)
 	content := NewContentView(app)
+	app.widgets = append(app.widgets, repo, info, dag, content)
 
-	peers := NewPeerList(app)
+	// side panel of file tree and info
+	side := cview.NewFlex()
+	side.SetBackgroundTransparent(false)
+	side.SetBackgroundColor(tcell.ColorDefault)
+	side.SetDirection(cview.FlexRow)
+	side.AddItem(repo, 0, 2, true)
+	side.AddItem(info, 0, 1, false)
 
-	app.widgets = append(app.widgets, repo, info, dag, content, peers)
-
-	dataPanels := cview.NewTabbedPanels()
-	dataPanels.AddTab("files", "files", repo)
-	dataPanels.AddTab("peers", "peers", peers)
-
-	dataPanels.SetBackgroundColor(tcell.ColorDefault)
-	dataPanels.SetTabBackgroundColor(tcell.ColorDefault)
-	dataPanels.SetTabSwitcherDivider("", " | ", "")
-	dataPanels.SetTabSwitcherAfterContent(true)
-	// dataPanels.SetDirection(cview.FlexColumn)
-	dataPanels.SetBorder(true)
-
-	app.dataPanels = dataPanels
-	// app.dataPanels.AddItem(app.repo, 0, 4, true)
-
+	// larger main content and dag explorer
 	mid := cview.NewFlex()
+	mid.SetBackgroundTransparent(false)
 	mid.SetBackgroundColor(tcell.ColorDefault)
 	mid.SetDirection(cview.FlexRow)
-	// mid.AddItem(app.dataPanels, 0, 4, true)
-	mid.AddItem(content, 0, 4, false)
-	// mid.AddItem(app.info, 0, 2, false)
-	mid.AddItem(dag, 0, 2, false)
+	mid.AddItem(content, 0, 2, false)
+	mid.AddItem(dag, 0, 1, false)
+
+	// wrapping cotainer
+	flex := cview.NewFlex()
+	flex.SetBackgroundTransparent(false)
+	flex.SetBackgroundColor(tcell.ColorDefault)
+	flex.AddItem(side, 0, 2, true)
+	flex.AddItem(mid, 0, 4, false)
+
+	app.initInputHandler(repo, content, dag, info)
+	return flex
+
+}
+func (app *App) initPeersLayout() *cview.Flex {
+	peers := NewPeerTable(app)
+	app.widgets = append(app.widgets, peers)
 
 	flex := cview.NewFlex()
 	flex.SetBackgroundTransparent(false)
 	flex.SetBackgroundColor(tcell.ColorDefault)
 
-	left := cview.NewFlex()
-	left.SetDirection(cview.FlexRow)
-	// left.AddItem(app.repo, 0, 7, false)
-	left.AddItem(app.dataPanels, 0, 4, false)
-	left.AddItem(info, 0, 2, false)
+	side := cview.NewFlex()
+	side.SetBackgroundTransparent(false)
+	side.SetBackgroundColor(tcell.ColorDefault)
+	side.AddItem(peers, 0, 1, true)
 
-	flex.AddItem(left, 0, 2, false)
-	flex.AddItem(mid, 0, 4, false)
-	app.root = flex
+	flex.AddItem(side, 0, 1, true)
 
-	app.initInputHandler(repo, content, dag, info)
+	return flex
+}
+
+func (app *App) initViews() {
+
+	filesFlex := app.initFilesLayout()
+	peersFlex := app.initPeersLayout()
+
+	dataPanels := cview.NewTabbedPanels()
+	dataPanels.SetTitle("panels")
+	dataPanels.AddTab("files", "files", filesFlex)
+	dataPanels.AddTab("peers", "peers", peersFlex)
+	dataPanels.SetCurrentTab("files")
+	dataPanels.SetBorder(false)
+	dataPanels.SetPadding(0, 0, 0, 0)
+
+	dataPanels.SetBackgroundColor(tcell.ColorDefault)
+	dataPanels.SetTabBackgroundColor(tcell.ColorDefault)
+	dataPanels.SetTabSwitcherDivider("", " | ", "")
+	dataPanels.SetTabSwitcherAfterContent(true)
+
+	app.root = dataPanels
 
 }
 
@@ -113,27 +134,25 @@ func (app *App) handleToggle(ev *tcell.EventKey) *tcell.EventKey {
 func (app *App) initBindings() {
 	c := cbind.NewConfiguration()
 	c.SetKey(tcell.ModNone, tcell.KeyTAB, app.handleToggle)
-	c.SetKey(tcell.ModNone, tcell.KeyF1, app.handleToggle)
 	c.SetRune(tcell.ModNone, '1', func(ev *tcell.EventKey) *tcell.EventKey {
-		app.dataPanels.SetCurrentTab("files")
+		app.root.SetCurrentTab("files")
 		return nil
 	})
 	c.SetRune(tcell.ModNone, '2', func(ev *tcell.EventKey) *tcell.EventKey {
-		app.dataPanels.SetCurrentTab("peers")
+		app.root.SetCurrentTab("peers")
 		return nil
 	})
 	app.ui.SetInputCapture(c.Capture)
 }
 
 func (app *App) initInputHandler(widgets ...cview.Primitive) {
-	widgets = append(widgets, app.dataPanels)
+	widgets = append(widgets)
 	app.focusManager = cview.NewFocusManager(app.ui.SetFocus)
 	app.focusManager.SetWrapAround(true)
 	app.focusManager.Add(widgets...)
 }
 
 func (app *App) Start() {
-	app.client = ipfs.NewClient("localhost:5001")
 
 	// Initialize application
 	app.ui = cview.NewApplication()
@@ -142,7 +161,6 @@ func (app *App) Start() {
 	app.initBindings()
 
 	app.ui.SetRoot(app.root, true)
-	app.ui.SetFocus(app.dataPanels)
 
 	app.ui.EnableMouse(true)
 

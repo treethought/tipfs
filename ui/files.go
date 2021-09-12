@@ -30,7 +30,6 @@ type TreeEntry struct {
 func (r *RepoTree) buildNodes(basePath string, entries ...*api.MfsLsEntry) []*cview.TreeNode {
 	nodes := []*cview.TreeNode{}
 	for _, i := range entries {
-		fmt.Println(i.Name)
 		node := cview.NewTreeNode(i.Name)
 		ref := TreeEntry{
 			entry: i,
@@ -40,7 +39,7 @@ func (r *RepoTree) buildNodes(basePath string, entries ...*api.MfsLsEntry) []*cv
 
 		if i.Type == api.TDirectory {
 
-			children, err := r.app.client.ListFiles(ref.path)
+			children, err := r.app.ipfs.ListFiles(ref.path)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
@@ -61,10 +60,11 @@ func NewRepoTree(app *App) *RepoTree {
 		TreeView: cview.NewTreeView(),
 		app:      app,
 	}
-	m.SetBorder(false)
+	m.SetBorder(true)
 	m.SetPadding(1, 1, 1, 1)
 	m.SetTitle("repo")
 	m.SetBackgroundColor(tcell.ColorDefault)
+	m.SetScrollBarVisibility(cview.ScrollBarNever)
 
 	rootNode := cview.NewTreeNode("/")
 	m.SetRoot(rootNode)
@@ -73,7 +73,7 @@ func NewRepoTree(app *App) *RepoTree {
 	m.inputHandler = cbind.NewConfiguration()
 	m.initBindings()
 
-	entries, err := app.client.ListFiles("/")
+	entries, err := app.ipfs.ListFiles("/")
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)

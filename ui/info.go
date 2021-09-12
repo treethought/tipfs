@@ -32,7 +32,7 @@ func (i *FileInfo) Update() {
 	i.Clear()
 
 	go i.app.ui.QueueUpdateDraw(func() {
-		stat, err := i.app.client.StatFile(current.path, current.entry)
+		stat, err := i.app.ipfs.StatFile(current.path, current.entry)
 		if err != nil {
 			i.SetText(fmt.Sprintf("%s\n%v", current.path, err))
 			return
