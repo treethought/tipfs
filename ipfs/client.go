@@ -4,9 +4,12 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"log"
 
 	api "github.com/ipfs/go-ipfs-api"
+	ipfs "github.com/ipfs/go-ipfs-http-client"
 	ipld "github.com/ipfs/go-ipld-format"
+	iface "github.com/ipfs/interface-go-ipfs-core"
 	"gopkg.in/yaml.v2"
 )
 
@@ -18,13 +21,24 @@ type DagData struct {
 type Client struct {
 	nodeURL string
 	sh      *api.Shell
+	api     *ipfs.HttpApi
 }
 
 func NewClient(url string) *Client {
+	addr, err := ipfs.ApiAddr("~/.ipfs")
+	if err != nil {
+		log.Fatal("failed to read ipfs api file")
+	}
+	fmt.Println("connected to api at: ", addr.String())
+	iapi, err := ipfs.NewApi(addr)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	c := &Client{
 		nodeURL: url,
 		sh:      api.NewLocalShell(),
+		api:     iapi,
 	}
 	return c
 }
@@ -90,8 +104,8 @@ func (c *Client) StatFile(path string, entry *api.MfsLsEntry) (string, error) {
 
 }
 
-func (c *Client) GetPeers() (*api.SwarmConnInfos, error) {
-	return c.sh.SwarmPeers(context.TODO())
+func (c *Client) GetPeers() ([]iface.ConnectionInfo, error) {
+	return c.api.Swarm().Peers(context.TODO())
 }
 
 func (c *Client) GetPeer(p string) (*api.PeerInfo, error) {

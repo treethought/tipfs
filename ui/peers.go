@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"code.rocketnine.space/tslocum/cbind"
 
@@ -39,18 +40,22 @@ func NewPeerTable(app *App) *PeerTable {
 		os.Exit(1)
 	}
 
-	m.SetCell(0, 0, cview.NewTableCell("peer"))
+	m.SetCell(0, 0, cview.NewTableCell("id"))
 	m.SetCell(0, 1, cview.NewTableCell("address"))
 	m.SetCell(0, 2, cview.NewTableCell("latency"))
 
 	m.SetFixed(1, 0)
 
-	for r, p := range peers.Peers {
-		name := cview.NewTableCell(p.Peer)
-		m.SetCell(r+1, 0, name)
-		addr := cview.NewTableCell(p.Addr)
+	for r, p := range peers {
+		id := cview.NewTableCell(p.ID().Pretty())
+		m.SetCell(r+1, 0, id)
+		addr := cview.NewTableCell(p.Address().String())
 		m.SetCell(r+1, 1, addr)
-		latency := cview.NewTableCell(p.Latency)
+		lat, err := p.Latency()
+		if err != nil {
+			lat = time.Duration(0)
+		}
+		latency := cview.NewTableCell(lat.String())
 		m.SetCell(r+1, 2, latency)
 
 	}
