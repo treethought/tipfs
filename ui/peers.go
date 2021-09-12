@@ -43,20 +43,27 @@ func NewPeerTable(app *App) *PeerTable {
 	m.SetCell(0, 0, cview.NewTableCell("id"))
 	m.SetCell(0, 1, cview.NewTableCell("address"))
 	m.SetCell(0, 2, cview.NewTableCell("latency"))
+	m.SetCell(0, 3, cview.NewTableCell("streams"))
 
 	m.SetFixed(1, 0)
 
 	for r, p := range peers {
 		id := cview.NewTableCell(p.ID().Pretty())
 		m.SetCell(r+1, 0, id)
+
 		addr := cview.NewTableCell(p.Address().String())
 		m.SetCell(r+1, 1, addr)
+
 		lat, err := p.Latency()
 		if err != nil {
 			lat = time.Duration(0)
 		}
 		latency := cview.NewTableCell(lat.String())
 		m.SetCell(r+1, 2, latency)
+
+		pstreams, _ := p.Streams()
+		streams := cview.NewTableCell(fmt.Sprint(len(pstreams)))
+		m.SetCell(r+1, 3, streams)
 
 	}
 
