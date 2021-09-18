@@ -103,15 +103,35 @@ func (app *App) initPeersLayout() *cview.Flex {
 	return flex
 }
 
+func (app *App) initCIDLayout() *cview.Flex {
+	cidview := NewCIDView(app)
+	app.widgets = append(app.widgets, cidview)
+
+	flex := cview.NewFlex()
+	flex.SetBackgroundTransparent(false)
+	flex.SetBackgroundColor(tcell.ColorDefault)
+
+	side := cview.NewFlex()
+	side.SetBackgroundTransparent(false)
+	side.SetBackgroundColor(tcell.ColorDefault)
+	side.AddItem(cidview, 0, 1, true)
+
+	flex.AddItem(side, 0, 1, true)
+
+	return side
+}
+
 func (app *App) initViews() {
 
 	filesFlex := app.initFilesLayout()
 	peersFlex := app.initPeersLayout()
+	cidFlex := app.initCIDLayout()
 
 	dataPanels := cview.NewTabbedPanels()
 	dataPanels.SetTitle("panels")
 	dataPanels.AddTab("files", "files", filesFlex)
 	dataPanels.AddTab("peers", "peers", peersFlex)
+	dataPanels.AddTab("cid", "cid", cidFlex)
 	dataPanels.SetCurrentTab("files")
 	dataPanels.SetBorder(false)
 	dataPanels.SetPadding(0, 0, 0, 0)
@@ -140,6 +160,10 @@ func (app *App) initBindings() {
 	})
 	c.SetRune(tcell.ModNone, '2', func(ev *tcell.EventKey) *tcell.EventKey {
 		app.root.SetCurrentTab("peers")
+		return nil
+	})
+	c.SetRune(tcell.ModNone, '3', func(ev *tcell.EventKey) *tcell.EventKey {
+		app.root.SetCurrentTab("cid")
 		return nil
 	})
 	app.ui.SetInputCapture(c.Capture)

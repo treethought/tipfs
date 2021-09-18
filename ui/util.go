@@ -3,6 +3,9 @@ package ui
 import (
 	"fmt"
 	"strings"
+
+	"code.rocketnine.space/tslocum/cview"
+	"github.com/charmbracelet/glamour"
 )
 
 func truncateMiddle(s string, length int) string {
@@ -29,4 +32,17 @@ func byteCount(b uint64) string {
 	}
 	return fmt.Sprintf("%.1f %ciB",
 		float64(b)/float64(div), "KMGTPE"[exp])
+}
+
+func renderMarkdown(in string) (string, error) {
+	r, _ := glamour.NewTermRenderer(
+		glamour.WithAutoStyle(),
+	)
+
+	rendered, err := r.Render(in)
+	if err != nil {
+		return "", err
+	}
+	trans := cview.TranslateANSI(rendered)
+	return trans, nil
 }

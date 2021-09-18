@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 
+	"github.com/ipfs/go-cid"
 	api "github.com/ipfs/go-ipfs-api"
 	ipfs "github.com/ipfs/go-ipfs-http-client"
 	ipld "github.com/ipfs/go-ipld-format"
@@ -43,8 +44,10 @@ func NewClient(url string) *Client {
 	return c
 }
 
-// func (c *Client) Get(path string, entry *api.MfsLsEntry) ([]byte, error) {
-// }
+// files api using go-ipfs-api
+// ideally we'd like to use the newer go-ipfs-http-client
+// because of it's nicer api and better interfaces
+// however, MFS support for files api is not yet supported
 
 func (c *Client) ReadFile(path string, entry *api.MfsLsEntry) ([]byte, error) {
 
@@ -56,16 +59,6 @@ func (c *Client) ReadFile(path string, entry *api.MfsLsEntry) ([]byte, error) {
 		return nil, err
 	}
 	return ioutil.ReadAll(r)
-}
-
-func (c *Client) GetDag(ref string) (dag *DagData, err error) {
-	dag = &DagData{}
-
-	err = c.sh.DagGet(ref, dag)
-	if err != nil {
-		return nil, err
-	}
-	return dag, nil
 }
 
 func (c *Client) ListFiles(path string) (entries []*api.MfsLsEntry, err error) {
@@ -104,10 +97,23 @@ func (c *Client) StatFile(path string, entry *api.MfsLsEntry) (string, error) {
 
 }
 
-func (c *Client) GetPeers() ([]iface.ConnectionInfo, error) {
-	return c.api.Swarm().Peers(context.TODO())
+// use go-ipfs-http-client for non files api calls
+
+func (c *Client) GetDag(ref string) (node ipld.Node, err error) {
+
+	refCid, err := cid.Parse(ref)
+	if err != nil {
+		panic(err)
+	}
+
+	node, err = c.api.Dag().Get(context.TODO(), refCid)
+	if err != nil {
+		return nil, err
+	}
+	return node, nil
+
 }
 
-func (c *Client) GetPeer(p string) (*api.PeerInfo, error) {
-	return c.sh.FindPeer(p)
+func (c *Client) GetPeers() ([]iface.ConnectionInfo, error) {
+	return c.api.Swarm().Peers(context.TODO())
 }
