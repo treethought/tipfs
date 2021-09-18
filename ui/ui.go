@@ -65,7 +65,8 @@ func (app *App) initFilesLayout() *cview.Flex {
 	info := NewFileInfo(app)
 	dag := NewDagInfo(app)
 	content := NewContentView(app)
-	app.widgets = append(app.widgets, repo, info, dag, content)
+	cidView := NewCIDView(app)
+	app.widgets = append(app.widgets, repo, info, dag, content, cidView)
 
 	// side panel of file tree and info
 	side := cview.NewFlex()
@@ -82,6 +83,8 @@ func (app *App) initFilesLayout() *cview.Flex {
 	mid.SetDirection(cview.FlexRow)
 	mid.AddItem(content, 0, 2, false)
 	mid.AddItem(dag, 0, 1, false)
+
+	mid.AddItem(cidView, 0, 1, false)
 
 	// wrapping cotainer
 	flex := cview.NewFlex()
@@ -119,15 +122,8 @@ func (app *App) initCIDLayout() *cview.Flex {
 	flex := cview.NewFlex()
 	flex.SetBackgroundTransparent(false)
 	flex.SetBackgroundColor(tcell.ColorDefault)
-
-	side := cview.NewFlex()
-	side.SetBackgroundTransparent(false)
-	side.SetBackgroundColor(tcell.ColorDefault)
-	side.AddItem(cidview, 0, 1, true)
-
-	flex.AddItem(side, 0, 1, true)
-
-	return side
+	flex.AddItem(cidview, 0, 1, true)
+	return flex
 }
 
 func (app *App) initViews() {
