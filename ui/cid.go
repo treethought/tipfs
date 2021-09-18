@@ -24,9 +24,11 @@ type CidView struct {
 }
 
 func NewCIDView(app *App) *CidView {
+	b := cview.NewBox()
+	b.SetBackgroundColor(tcell.ColorDefault)
 
 	m := &CidView{
-		Frame: cview.NewFrame(cview.NewBox()),
+		Frame: cview.NewFrame(b),
 		app:   app,
 	}
 
@@ -85,25 +87,10 @@ func humanMultiHash(c cid.Cid) string {
 	)
 }
 
-func (c *CidView) Update() {
-	current := c.app.state.currentFile
-	_, entry := current.path, current.entry
-
-	fcid, err := cid.Parse(entry.Hash)
-	if err != nil {
-		log.Fatal(err)
-	}
-
+func (c *CidView) updateText(fcid cid.Cid) *cview.TextView {
 	text := cview.NewTextView()
 	text.SetBackgroundColor(tcell.ColorDefault)
-
-	frame := cview.NewFrame(text)
-	frame.SetBackgroundColor(tcell.ColorDefault)
-	// top header
-	frame.AddText(fmt.Sprintf("Version: v%d", fcid.Version()), true, cview.AlignLeft, tcell.ColorDefault)
-	frame.AddText(fcid.String(), true, cview.AlignCenter, tcell.ColorDefault)
-
-	c.Frame = frame
+	text.SetBorder(true)
 
 	out := []string{}
 	out = append(out, "# Human Readable CID")
@@ -131,6 +118,25 @@ func (c *CidView) Update() {
 	}
 	text.SetDynamicColors(true)
 
+	text.SetTextAlign(cview.AlignCenter)
 	text.SetText(rendered)
+	return text
+}
+
+func (c *CidView) Update() {
+	current := c.app.state.currentHash
+	fcid, err := cid.Parse(current)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	text := c.updateText(fcid)
+	frame := cview.NewFrame(text)
+	frame.SetBackgroundColor(tcell.ColorDefault)
+	// top header
+	frame.AddText(fmt.Sprintf("Version: v%d", fcid.Version()), true, cview.AlignLeft, tcell.ColorDefault)
+	frame.AddText(fcid.String(), true, cview.AlignCenter, tcell.ColorDefault)
+
+	c.Frame = frame
 
 }
