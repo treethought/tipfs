@@ -44,7 +44,7 @@ func NewDagInfo(app *App) *DagInfo {
 func (i *DagInfo) handleSelect(ev *tcell.EventKey) *tcell.EventKey {
 	node := i.GetCurrentNode()
 	ref := node.GetReference()
-	link, ok := ref.(ipld.Link)
+	link, ok := ref.(*ipld.Link)
 	if !ok {
 		return nil
 	}
@@ -75,6 +75,22 @@ func (d *DagInfo) initBindings() {
 	d.SetInputCapture(d.inputHandler.Capture)
 }
 
+func linkToNode(l *ipld.Link) *cview.TreeNode {
+	node := cview.NewTreeNode(l.Cid.String())
+	node.SetReference(l)
+
+	size := cview.NewTreeNode(byteCount(l.Size))
+	size.SetSelectable(false)
+
+	name := cview.NewTreeNode(l.Name)
+	name.SetSelectable(false)
+
+	node.AddChild(name)
+	node.AddChild(size)
+	node.SetExpanded(false)
+	return node
+}
+
 func (i *DagInfo) Update() {
 	i.GetRoot().ClearChildren()
 	fileNode := i.app.state.currentFile
@@ -101,17 +117,12 @@ func (i *DagInfo) Update() {
 		}
 
 		lines := []string{}
-		truncData := truncateMiddle(dag.Data, 12)
+		truncData := truncateMiddle(string(dag.RawData()), 12)
 		lines = append(lines, "data:", truncData)
 		lines = append(lines, "links:")
 
-		for _, l := range dag.Links {
-			node := cview.NewTreeNode(l.Cid.String())
-			node.SetReference(l)
-			size := cview.NewTreeNode(byteCount(l.Size))
-			name := cview.NewTreeNode(l.Name)
-			node.AddChild(name)
-			node.AddChild(size)
+		for _, l := range dag.Links() {
+			node := linkToNode(l)
 			i.GetRoot().AddChild(node)
 		}
 
