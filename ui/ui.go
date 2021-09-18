@@ -25,6 +25,7 @@ type Widget interface {
 type State struct {
 	app         *App
 	currentFile TreeEntry
+	currentHash string
 }
 
 func NewState(app *App) *State {
@@ -36,6 +37,14 @@ func NewState(app *App) *State {
 
 func (s *State) SetItem(e TreeEntry) {
 	s.currentFile = e
+	s.currentHash = e.entry.Hash
+	for _, w := range s.app.widgets {
+		w.Update()
+	}
+}
+
+func (s *State) SetHash(h string) {
+	s.currentHash = h
 	for _, w := range s.app.widgets {
 		w.Update()
 	}

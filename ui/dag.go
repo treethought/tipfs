@@ -14,7 +14,6 @@ type DagInfo struct {
 	app          *App
 	inputHandler *cbind.Configuration
 	currentEntry TreeEntry
-	currentHash  string
 }
 
 func NewDagInfo(app *App) *DagInfo {
@@ -53,7 +52,7 @@ func (i *DagInfo) handleSelect(ev *tcell.EventKey) *tcell.EventKey {
 		node.SetExpanded(true)
 	}
 
-	i.currentHash = link.Cid.String()
+	i.app.state.SetHash(link.Cid.String())
 	i.Update()
 
 	return nil
@@ -98,7 +97,7 @@ func (i *DagInfo) Update() {
 	// new file was selected, show dag for that
 	if i.currentEntry.path != fileNode.path {
 		i.currentEntry = fileNode
-		i.currentHash = fileNode.entry.Hash
+		i.app.state.currentHash = fileNode.entry.Hash
 	}
 
 	current := i.GetCurrentNode()
@@ -111,7 +110,7 @@ func (i *DagInfo) Update() {
 
 	go i.app.ui.QueueUpdateDraw(func() {
 
-		dag, err := i.app.ipfs.GetDag(i.currentHash)
+		dag, err := i.app.ipfs.GetDag(i.app.state.currentHash)
 		if err != nil {
 			panic(err)
 		}
