@@ -58,23 +58,15 @@ func prettyVersion(c cid.Cid) string {
 
 func codecName(c cid.Cid) string {
 	// codeToStr gives protbuf
-	// while multicodec lib give dad-ob
+	// while multicodec lib give dad-pb
 
 	// return cid.CodecToStr[c.Prefix().Codec]
 	return multicodec.Code(c.Prefix().Codec).String()
 
 }
 
-// TODO figure out how to get actual code
 func codecCode(c cid.Cid) string {
-	s := fmt.Sprintf("%v", c.Prefix().Codec)
-	code := multicodec.Code(c.Prefix().Codec)
-	_ = code.Set(s)
-	// return string(code)
-
-	return fmt.Sprintf("%v", uint64(code))
-
-	// s := strconv.FormatUint(c.Prefix().Codec, 64)
+	return fmt.Sprintf("%#x", c.Prefix().Codec)
 }
 
 func humanMultiHash(c cid.Cid) string {
@@ -90,7 +82,6 @@ func humanMultiHash(c cid.Cid) string {
 func (c *CidView) updateText(fcid cid.Cid) *cview.TextView {
 	text := cview.NewTextView()
 	text.SetBackgroundColor(tcell.ColorDefault)
-	text.SetBorder(true)
 
 	out := []string{}
 	out = append(out, "# Human Readable CID")
@@ -110,7 +101,7 @@ func (c *CidView) updateText(fcid cid.Cid) *cview.TextView {
 	out = append(out, fmt.Sprintf("code: %s", codecCode(fcid)))
 	out = append(out, fmt.Sprintf("name: %s", codecName(fcid)))
 
-	info := strings.Join(out, "\n\n")
+	info := strings.Join(out, "\n")
 
 	rendered, err := renderMarkdown(info)
 	if err != nil {
@@ -134,8 +125,8 @@ func (c *CidView) Update() {
 	frame := cview.NewFrame(text)
 	frame.SetBackgroundColor(tcell.ColorDefault)
 	// top header
-	frame.AddText(fmt.Sprintf("Version: v%d", fcid.Version()), true, cview.AlignLeft, tcell.ColorDefault)
-	frame.AddText(fcid.String(), true, cview.AlignCenter, tcell.ColorDefault)
+	frame.AddText(fmt.Sprintf("Version: v%d", fcid.Version()), true, cview.AlignLeft, tcell.ColorWhite)
+	frame.AddText(fcid.String(), true, cview.AlignCenter, tcell.ColorWhite)
 
 	c.Frame = frame
 
