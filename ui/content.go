@@ -10,6 +10,7 @@ import (
 
 	"code.rocketnine.space/tslocum/cview"
 	md "github.com/JohannesKaufmann/html-to-markdown"
+	"github.com/charmbracelet/glamour"
 	"github.com/eliukblau/pixterm/pkg/ansimage"
 	"github.com/gdamore/tcell/v2"
 )
@@ -60,12 +61,23 @@ func (c *Content) Update() {
 		img := translateImage(r, w, h)
 		c.SetText(img)
 	case "text/html; charset=utf-8":
+		c.SetDynamicColors(true)
 		converter := md.NewConverter("", true, nil)
 		markdown, err := converter.ConvertBytes(data)
 		if err != nil {
 			log.Fatal(err)
 		}
-		c.SetText(string(markdown))
+
+		r, _ := glamour.NewTermRenderer(
+			glamour.WithAutoStyle(),
+		)
+
+		rendered, err := r.Render(string(markdown))
+		if err != nil {
+			c.SetText(err.Error())
+		}
+		trans := cview.TranslateANSI(rendered)
+		c.SetText(trans)
 
 	case "text/plain; charset=utf-8":
 		c.Write(data)
