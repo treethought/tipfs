@@ -43,12 +43,11 @@ func NewCIDView(app *App) *CidView {
 func getMultiBaseEncoding(c cid.Cid) string {
 	multiBaseEncoding := "unknown"
 	if c.Version() == 0 {
-		multiBaseEncoding = "base58btc"
-	} else {
-		enc, _, err := multibase.Decode(c.String())
-		if err == nil {
-			multiBaseEncoding = multibase.EncodingToStr[enc]
-		}
+		return "base58btc"
+	}
+	enc, _, err := multibase.Decode(c.String())
+	if err == nil {
+		multiBaseEncoding = multibase.EncodingToStr[enc]
 	}
 	return multiBaseEncoding
 }
@@ -90,9 +89,11 @@ func toV1(c cid.Cid) cid.Cid {
 }
 
 func hashDigest(c cid.Cid) string {
-	dh, err := multihash.Decode(c.Bytes())
+	data := []byte(c.Hash())
+
+	dh, err := multihash.Decode(data)
 	if err != nil {
-		return "error decoding multihash"
+		return fmt.Sprintf("error decoding multihash: %v", err)
 	}
 
 	hexout := hex.EncodeToString(dh.Digest)
@@ -116,6 +117,10 @@ func (c *CidView) updateText(fcid cid.Cid) *cview.TextView {
 	out = append(out, "multibase - version - multicodec - multihash\n")
 
 	out = append(out, "# Multibase")
+	out = append(out, fmt.Sprintf("prefix: %s\n", string([]rune(fcid.String())[0])))
+	out = append(out, fmt.Sprintf("name: %s\n", getMultiBaseEncoding(fcid)))
+
+	out = append(out, "# Multicodec")
 	out = append(out, fmt.Sprintf("code: %s\n", codecCode(fcid)))
 	out = append(out, fmt.Sprintf("name: %s\n", codecName(fcid)))
 
