@@ -82,6 +82,13 @@ func humanMultiHash(c cid.Cid) string {
 	)
 }
 
+func toV1(c cid.Cid) cid.Cid {
+	if c.Version() == 1 {
+		return c
+	}
+	return cid.NewCidV1(cid.DagProtobuf, c.Hash())
+}
+
 func hashDigest(c cid.Cid) string {
 	dh, err := multihash.Decode(c.Bytes())
 	if err != nil {
@@ -117,6 +124,10 @@ func (c *CidView) updateText(fcid cid.Cid) *cview.TextView {
 	out = append(out, fmt.Sprintf("name: %s\n", multihash.Codes[fcid.Prefix().MhType]))
 	out = append(out, fmt.Sprintf("bits: %d\n", fcid.Prefix().MhLength*8))
 	out = append(out, fmt.Sprintf("digest (hex): %s\n", hashDigest(fcid)))
+
+	out = append(out, "# CIDV1 (Base32)")
+	v1 := toV1(fcid)
+	out = append(out, v1.String())
 
 	info := strings.Join(out, "\n\n")
 
