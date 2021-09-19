@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"encoding/hex"
 	"fmt"
 	"log"
 	"strings"
@@ -69,14 +70,26 @@ func codecCode(c cid.Cid) string {
 	return fmt.Sprintf("%#x", c.Prefix().Codec)
 }
 
+func multiHashCode(c cid.Cid) string {
+	return fmt.Sprintf("%#x", c.Prefix().MhType)
+}
+
 func humanMultiHash(c cid.Cid) string {
-	h := c.Hash()
-	hash := &h
 	return fmt.Sprintf("%s: %d: %s",
 		multihash.Codes[c.Prefix().MhType],
 		c.Prefix().MhLength*8,
-		strings.ToUpper(string(hash.HexString())),
+		hashDigest(c),
 	)
+}
+
+func hashDigest(c cid.Cid) string {
+	dh, err := multihash.Decode(c.Bytes())
+	if err != nil {
+		return "error decoding multihash"
+	}
+
+	hexout := hex.EncodeToString(dh.Digest)
+	return strings.ToUpper(hexout)
 }
 
 func (c *CidView) updateText(fcid cid.Cid) *cview.TextView {
@@ -93,15 +106,19 @@ func (c *CidView) updateText(fcid cid.Cid) *cview.TextView {
 		humanMultiHash(fcid),
 	)
 	out = append(out, human)
-
 	out = append(out, "multibase - version - multicodec - multihash\n")
-	out = append(out, "---")
 
 	out = append(out, "# Multibase")
-	out = append(out, fmt.Sprintf("code: %s", codecCode(fcid)))
-	out = append(out, fmt.Sprintf("name: %s", codecName(fcid)))
+	out = append(out, fmt.Sprintf("code: %s\n", codecCode(fcid)))
+	out = append(out, fmt.Sprintf("name: %s\n", codecName(fcid)))
 
-	info := strings.Join(out, "\n")
+	out = append(out, "# Multihash")
+	out = append(out, fmt.Sprintf("code: %s\n", multiHashCode(fcid)))
+	out = append(out, fmt.Sprintf("name: %s\n", multihash.Codes[fcid.Prefix().MhType]))
+	out = append(out, fmt.Sprintf("bits: %d\n", fcid.Prefix().MhLength*8))
+	out = append(out, fmt.Sprintf("digest (hex): %s\n", hashDigest(fcid)))
+
+	info := strings.Join(out, "\n\n")
 
 	rendered, err := renderMarkdown(info)
 	if err != nil {
@@ -124,6 +141,7 @@ func (c *CidView) Update() {
 	text := c.updateText(fcid)
 	frame := cview.NewFrame(text)
 	frame.SetBackgroundColor(tcell.ColorDefault)
+	frame.SetBorder(true)
 	// top header
 	frame.AddText(fmt.Sprintf("Version: v%d", fcid.Version()), true, cview.AlignLeft, tcell.ColorWhite)
 	frame.AddText(fcid.String(), true, cview.AlignCenter, tcell.ColorWhite)
