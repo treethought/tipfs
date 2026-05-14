@@ -11,6 +11,7 @@ go get github.com/treethought/tipfs
 ```
 
 ## Features
+
 - Browse, viewing Mutable File System
 - Exploring  DAG nodes
 - Viewing peers
@@ -31,10 +32,3 @@ go get github.com/treethought/tipfs
 | G     | Go to bottom of panel       |
 | 1     | Switch to files mode        |
 | 2     | Switch to peers mode        |
-
-    
-
-
-
-
-
