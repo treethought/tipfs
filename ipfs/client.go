@@ -2,6 +2,7 @@ package ipfs
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 
@@ -11,7 +12,7 @@ import (
 )
 
 type DagData struct {
-	Data  string
+	Data  json.RawMessage
 	Links []ipld.Link
 }
 
